@@ -1,0 +1,43 @@
+server:
+  port: 8181
+
+tomcat:
+  max-threads: 200
+  min-spare-threads: 10
+  accept-count: 100
+  max-connections: 1000
+  connection-timeout: 10000
+
+# MySQL Database
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/micro_video?useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: 123456
+
+# Swagger
+springfox:
+  documentation:
+    swagger:
+      use-model-v3: false
+    swagger-ui:
+      enabled: true
+
+# RocketMQ
+rocketmq:
+#  name-server: localhost:9876
+  # 生产者配置
+  producer:
+    namesrvAddr: localhost:9876
+    # 发送同一类消息的设置为同一个group，保证唯一
+    # 必须指定 group
+    groupName: seckill-order-group
+    topic: red-paper
+  # 消费者配置
+  consumer:
+    namesrvAddr: localhost:9876
+    # 官方建议：确保同一组中的每个消费者订阅相同的主题
+    # 必须指定 group
+    groupName: seckill-order-group
+    topic: red-paper
