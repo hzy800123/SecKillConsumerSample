@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import springfox.documentation.oas.annotations.EnableOpenApi;
 
 @SpringBootApplication
-@EnableAutoConfiguration
 @EnableOpenApi
 @MapperScan("com.microvideoSecKill.dao")
 public class App {

@@ -1,9 +1,12 @@
 package com.microvideoSecKill.rocketmq;
 
+import java.sql.Timestamp;
+
 public class SecKillMessage {
     private String userId;
     private String goodsId;
     private Integer buyCount;
+    private Timestamp timestamp;
 
     public String getUserId() {
         return userId;
@@ -29,12 +32,11 @@ public class SecKillMessage {
         this.buyCount = buyCount;
     }
 
-    @Override
-    public String toString() {
-        return "SecKillMessage{" +
-                "userId='" + userId + '\'' +
-                ", goodsId='" + goodsId + '\'' +
-                ", buyCount=" + buyCount +
-                '}';
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
     }
 }

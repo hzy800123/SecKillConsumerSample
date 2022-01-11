@@ -2,6 +2,7 @@ package com.microvideoSecKill.rocketmq;
 
 import com.alibaba.fastjson.JSON;
 import com.microvideoSecKill.service.SecKillGoodsService;
+import com.microvideoSecKill.service.SecKillOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.ConsumeConcurrentlyContext;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -32,6 +34,9 @@ public class Consumer {
 
     @Autowired
     SecKillGoodsService secKillGoodsService;
+
+    @Autowired
+    SecKillOrderService secKillOrderService;
 
     private static DefaultMQPushConsumer consumer;
 
@@ -58,14 +63,24 @@ public class Consumer {
                     String userId = secKillMessage.getUserId();
                     String goodsId = secKillMessage.getGoodsId();
                     Integer buyCount = secKillMessage.getBuyCount();
+                    Timestamp timestamp = secKillMessage.getTimestamp();
 
                     // MySQL 减库存
                     // 每次成功秒杀的商品（或红包）的数量为 buyCount
-                    boolean success = secKillGoodsService.reduceStock(goodsId, buyCount);
-                    if (success) {
-                        log.info("Update MySQL Database for SecKill Successfully !");
+                    boolean successReduceStock = reduceStock(goodsId, buyCount);
+                    if (successReduceStock) {
+                        log.info("Update MySQL Database for SecKill Reduce Stock Successfully !");
                     } else {
-                        log.error("Update MySQL Database for SecKill is failed !");
+                        log.error("Update MySQL Database for SecKill Reduce Stock is failed !");
+                    }
+
+                    // MySQL 创建订单
+                    // 每次成功秒杀的商品（或红包）的数量为 buyCount
+                    boolean successCreateOrder = createNewOrder(userId, goodsId, buyCount, timestamp);
+                    if (successCreateOrder) {
+                        log.info("Insert MySQL Database for Order detail Successfully !");
+                    } else {
+                        log.error("Insert MySQL Database for Order detail is failed !");
                     }
                 }
 
@@ -79,6 +94,32 @@ public class Consumer {
         consumer.start();
         System.out.println("消费者 Consumer start");
     }
+
+
+    // MySQL 减库存
+    private boolean reduceStock(String goodsId, Integer buyCount) {
+        boolean successReduceStock = false;
+        try {
+            successReduceStock = secKillGoodsService.reduceStock(goodsId, buyCount);
+        } catch (Exception e) {
+            log.error("Error in Update MySQL Database for Reduce Stock - ", e);
+        }
+        return successReduceStock;
+    }
+
+
+    // MySQL 创建订单
+    private boolean createNewOrder(String userId, String goodsId, Integer buyCount, Timestamp timestamp) {
+        boolean successCreateOrder = false;
+        try {
+            successCreateOrder = secKillOrderService.
+                    createNewSecKillGoodsAndStockCount(userId, goodsId, buyCount, timestamp);
+        } catch (Exception e) {
+            log.error("Error in Insert MySQL Database for Order detail - ", e);
+        }
+        return successCreateOrder;
+    }
+
 
     @PreDestroy
     public void shutDownConsumer() {
