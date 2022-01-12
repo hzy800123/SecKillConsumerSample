@@ -125,7 +125,7 @@ public class Consumer {
     public void shutDownConsumer() {
         if (consumer != null) {
             consumer.shutdown();
-            System.out.println("生产者 Consumer shutdown");
+            System.out.println("消费者 Consumer shutdown");
         }
     }
 }
